@@ -1,0 +1,109 @@
+<html>
+<head>
+  <title>Dodge The Balls</title>
+  <meta charset="UTF-8" />
+  <script>
+    let canvas;
+    let context;
+    let score = 0;
+
+    const PLAYER_START = {
+      x: 50,
+      y: 50,
+    }
+
+    const player = {
+      x: PLAYER_START.x,
+      y: PLAYER_START.y,
+      size: 25,
+      speed: 25,
+    }
+
+    let balls = [];
+
+    window.onload = function() {
+      canvas = document.createElement('canvas');
+      canvas.width = 640;
+      canvas.height = 480;
+      document.body.appendChild(canvas);
+      document.addEventListener('keydown', keyDownHandler);
+      context = canvas.getContext('2d');
+
+      setInterval(() => {
+        requestAnimationFrame(update);
+      }, 1000 / 30); // 30 FPS
+
+      setInterval(spawnBall, 1000);
+    }
+
+    function update() {
+      context.fillStyle = 'black';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.fillStyle = 'white';
+      context.fillRect(player.x, player.y, player.size, player.size);
+
+      for (let i=balls.length-1; i>=0; i--) {
+        const ball = balls[i];
+        ball.x = ball.x - ball.speed;
+        if (ball.x < -ball.size) {
+          balls.splice(i,1);
+          score++;
+          document.getElementById("scoreLabel").innerHTML = score;
+        }
+        context.fillStyle = 'red';
+        context.fillRect(ball.x, ball.y, ball.size, ball.size);
+      }
+
+      for (let i=balls.length-1; i>=0; i--) {
+        const ball = balls[i];
+        const distanceBetweenBallX = Math.abs(ball.x - player.x);
+        const distanceBetweenBallY = Math.abs(ball.y - player.y);
+        const distanceBetweenBall = Math.sqrt(distanceBetweenBallX*distanceBetweenBallX + distanceBetweenBallY*distanceBetweenBallY);
+        if (distanceBetweenBall < (player.size + ball.size)/2) {
+          player.x = PLAYER_START.x;
+          player.y = PLAYER_START.y;
+          balls = [];
+          score = 0;
+          document.getElementById("scoreLabel").innerHTML = 0;
+          break;
+        }
+      }
+    }
+
+    function spawnBall() {
+      const size = Math.random() * 50 + 25;
+      const ball = {
+        x: canvas.width + size,
+        y: Math.random() * canvas.height,
+        size,
+        speed: Math.random() * 25 + 10,
+      }
+      balls.push(ball);
+    }
+
+    function keyDownHandler(event) {
+      switch (event.keyCode) {
+        case 65: //Left(a)
+          player.x = player.x - player.speed;
+          break;
+        case 68: //Right(d)
+          player.x = player.x + player.speed;
+          break;
+        case 83: //Down(s)
+          player.y = player.y + player.speed;
+          break;
+        case 87: //Up(w)
+          player.y = player.y - player.speed;
+          break;
+      }
+    }
+  </script>
+</head>
+<body>
+  <h1>Dodge the Balls</h1>
+  <div>WASD to move</div>
+  <div>
+    <label>Score: </label>
+    <label id="scoreLabel">0</label>
+  </div>
+</body>
